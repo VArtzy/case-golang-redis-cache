@@ -4,6 +4,7 @@ import (
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"golang-clean-architecture/internal/delivery/http"
@@ -22,6 +23,7 @@ type BootstrapConfig struct {
 	Validate *validator.Validate
 	Config   *viper.Viper
 	Producer *kafka.Producer
+	Redis 	 *redis.Client
 }
 
 func Bootstrap(config *BootstrapConfig) {
@@ -29,6 +31,7 @@ func Bootstrap(config *BootstrapConfig) {
 	userRepository := repository.NewUserRepository(config.Log)
 	contactRepository := repository.NewContactRepository(config.Log)
 	addressRepository := repository.NewAddressRepository(config.Log)
+	categoryRepository := repository.NewCategoryRepository(config.Log)
 
 	// setup producer
 	userProducer := messaging.NewUserProducer(config.Producer, config.Log)
@@ -39,21 +42,24 @@ func Bootstrap(config *BootstrapConfig) {
 	userUseCase := usecase.NewUserUseCase(config.DB, config.Log, config.Validate, userRepository, userProducer)
 	contactUseCase := usecase.NewContactUseCase(config.DB, config.Log, config.Validate, contactRepository, contactProducer)
 	addressUseCase := usecase.NewAddressUseCase(config.DB, config.Log, config.Validate, contactRepository, addressRepository, addressProducer)
+	categoryUseCase := usecase.NewCategoryUseCase(config.DB, config.Log, config.Validate, categoryRepository, config.Redis)
 
 	// setup controller
 	userController := http.NewUserController(userUseCase, config.Log)
 	contactController := http.NewContactController(contactUseCase, config.Log)
 	addressController := http.NewAddressController(addressUseCase, config.Log)
+	categoryController := http.NewCategoryController(categoryUseCase, config.Log)
 
 	// setup middleware
 	authMiddleware := middleware.NewAuth(userUseCase)
 
 	routeConfig := route.RouteConfig{
-		App:               config.App,
-		UserController:    userController,
-		ContactController: contactController,
-		AddressController: addressController,
-		AuthMiddleware:    authMiddleware,
+		App:                config.App,
+		UserController:     userController,
+		ContactController:  contactController,
+		AddressController:  addressController,
+		CategoryController: categoryController,
+		AuthMiddleware:     authMiddleware,
 	}
 	routeConfig.Setup()
 }
