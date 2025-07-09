@@ -16,7 +16,7 @@
 | **3. Redis Implementation**      | 749 (+142%)        | 189ms       | 84ms        | 475ms       | 5.3MB/s         | 7.2x faster            |
 | **4. Prefork Only**              | 777 (+4%)          | 195ms       | 81ms        | 654ms       | 5.5MB/s         | 7.47x faster           |
 | **5. Serialization Only**        | 2,201 (+183%)      | 57ms        | 28.6ms      | 207ms       | 16MB/s          | 21.2x faster           |
-| **6. Serialization+Prefork**     | 2,027          | 59.93ms | 31.06ms | 194ms   | 14MB/s      | 19.5x faster       |
+| **6. Serialization+Prefork**     | 2,027              | 59.93ms     | 31.06ms     | 194ms       | 14MB/s          | 19.5x faster           |
 
 ### **Key Observations**:
 
